@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dolsoft.licenses.model.License;
 import com.dolsoft.licenses.service.LicenseService;
 
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+
 @RestController
 @RequestMapping(value="v1/organization/{organizationId}/licenses")
 public class LicenseController {
@@ -25,11 +28,25 @@ public class LicenseController {
 	private LicenseService licenseService;
 	
 	//@GetMapping(value="/{licenseId}")
-	@RequestMapping(value="/{licenseId}",method = RequestMethod.GET)
+	@RequestMapping(value="/{licenseId}", method = RequestMethod.GET)
 	public ResponseEntity<License> getLicense(
 			@PathVariable("organizationId") String organizationId,
 			@PathVariable("licenseId") String licenseId) {
 		License license = licenseService.getLicense(licenseId,organizationId);
+		
+		license.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+				.getLicense(organizationId, license.getLicenseId()))
+				.withSelfRel(),
+				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+				.createLicense(organizationId, license))
+				.withRel("createLicense"),
+				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+				.updateLicense(organizationId, license))
+				.withRel("updateLicense"),
+				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+				.deleteLicense(organizationId, license.getLicenseId()))
+				.withRel("deleteLicense"));
+		
 	return ResponseEntity.ok(license);
 	}
 	
