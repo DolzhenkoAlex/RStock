@@ -7,31 +7,18 @@ FROM eclipse-temurin:17-jdk-alpine as build
 # Добавить информацию о владельце
 LABEL maintainer="Alex Dolzhenko <doljenkoalex@gmail.com>"
 
+VOLUME /tmp
+
 # The application's jar file
 # Файл jar приложения
 ARG JAR_FILE
 
 # Add the application's jar to the container
-# Добавить файл jar приложения в контейнер
+# Добавить файл jar приложения в контейнер с именем app.jar
 COPY ${JAR_FILE} app.jar
 
-#unpackage jar file
-# Распаковывает app.jar, скопированный ранее,в файловую систему image
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf /app.jar)
-
-#stage 2
-#Same Java runtime
-FROM eclipse-temurin:17-jdk-alpine
-
-#Add volume pointing to /tmp
-VOLUME /tmp
-
-#Copy unpackaged application to new container
-ARG DEPENDENCY=/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+#EXPOSE 8080
 
 #execute the application
 # запустить приложение
-ENTRYPOINT ["java","-jar","app:app/lib/*","com.dolsoft.licenses.LicensesApplication"]
+ENTRYPOINT ["java","-jar","/app.jar"]
