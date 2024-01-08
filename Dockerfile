@@ -17,7 +17,7 @@ ARG JAR_FILE
 # Добавить файл jar приложения в контейнер с именем app.jar
 COPY ${JAR_FILE} app.jar
 
-#EXPOSE 8080
+EXPOSE 8080
 
 #execute the application
 # запустить приложение
