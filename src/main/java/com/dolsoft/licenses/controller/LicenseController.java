@@ -1,6 +1,9 @@
 package com.dolsoft.licenses.controller;
 
-import java.util.Random;
+//import java.util.Random;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,47 +30,46 @@ public class LicenseController {
 	@Autowired
 	private LicenseService licenseService;
 	
-	//@GetMapping(value="/{licenseId}")
-	@RequestMapping(value="/{licenseId}", method = RequestMethod.GET)
-	public ResponseEntity<License> getLicense(
-			@PathVariable("organizationId") String organizationId,
-			@PathVariable("licenseId") String licenseId) {
-		License license = licenseService.getLicense(licenseId,organizationId);
+	@GetMapping(value="/{licenseId}")
+	//@RequestMapping(value="/{licenseId}", method = RequestMethod.GET)
+	public ResponseEntity<License> getLicense(@PathVariable("licenseId") Long Id) {
 		
-		license.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
-				.getLicense(organizationId, license.getLicenseId()))
-				.withSelfRel(),
-				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
-				.createLicense(organizationId, license))
-				.withRel("createLicense"),
-				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
-				.updateLicense(organizationId, license))
-				.withRel("updateLicense"),
-				WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
-				.deleteLicense(organizationId, license.getLicenseId()))
-				.withRel("deleteLicense"));
-		
+		License license = licenseService.getLicense(Id);
+	
+		license.add(
+				linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+						.getLicense(license.getLicenseId()))
+						.withSelfRel(),
+				linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+						.createLicense(license))
+						.withRel("createLicense"),
+				linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+						.updateLicense(license, Id))
+						.withRel("updateLicense"),
+				linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+						.deleteLicense(Id))
+						.withRel("deleteLicense"));
+	
 	return ResponseEntity.ok(license);
 	}
 	
 	@PutMapping
 	public ResponseEntity<String> updateLicense(
-			@PathVariable("organizationId")	String organizationId,
-			@RequestBody License request) {
-		return ResponseEntity.ok(licenseService.updateLicense(request,organizationId));
+			@RequestBody License request,
+			@PathVariable("Id")	Long Id)
+			 {
+		return ResponseEntity.ok(licenseService.updateLicense(request, Id).toString());
 	}
 	
 	@PostMapping
-	public ResponseEntity<String> createLicense(
-			@PathVariable("organizationId") String organizationId,
+	public ResponseEntity<License> createLicense(
 			@RequestBody License request) {
-		return ResponseEntity.ok(licenseService.createLicense(request,organizationId));
+		return ResponseEntity.ok(licenseService.createLicense(request));
 	}
 	
 	@DeleteMapping(value="/{licenseId}")
 	public ResponseEntity<String> deleteLicense(
-			@PathVariable("organizationId") String organizationId,
-			@PathVariable("licenseId") String licenseId) {
-		return ResponseEntity.ok(licenseService.deleteLicense(licenseId,organizationId));
+			@PathVariable("licenseId") Long licenseId) {
+		return ResponseEntity.ok(licenseService.deleteLicense(licenseId));
 	}
 }
